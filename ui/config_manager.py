@@ -1,5 +1,6 @@
 """
 Configuration manager for app_config.json persistence.
+Preserves all top-level configuration keys including AI Presets, Custom Models, Base URLs, and Theme settings across application restarts.
 """
 
 import json
@@ -17,11 +18,13 @@ class ConfigManager:
         self.load()
 
     def load(self):
+        """Loads configuration from JSON file and preserves all custom user keys."""
         self.data = {
             "last_provider": "OpenAI",
+            "theme": "Dark",
             "last_models": {
                 "OpenAI": "gpt-4o-mini",
-                "Google Gemini": "gemini-1.5-flash",
+                "Google Gemini": "gemini-2.0-flash",
                 "Anthropic Claude": "claude-3-5-haiku-20241022",
                 "DeepSeek": "deepseek-chat",
                 "Groq": "llama-3.3-70b-versatile",
@@ -35,6 +38,29 @@ class ConfigManager:
                 "Groq": [],
                 "Ollama / Custom API": []
             },
+            "ai_presets": {
+                "Fast & Cheap (GPT-4o Mini)": {
+                    "provider": "OpenAI",
+                    "model": "gpt-4o-mini",
+                    "workers": "3"
+                },
+                "High Quality (GPT-4o)": {
+                    "provider": "OpenAI",
+                    "model": "gpt-4o",
+                    "workers": "3"
+                },
+                "Ultra Speed (Gemini Flash)": {
+                    "provider": "Google Gemini",
+                    "model": "gemini-2.0-flash",
+                    "workers": "3"
+                },
+                "Deep Reasoning (DeepSeek Chat)": {
+                    "provider": "DeepSeek",
+                    "model": "deepseek-chat",
+                    "workers": "3"
+                }
+            },
+            "provider_base_urls": {},
             "blog_config": {
                 "tones": ["Conversational & Engaging", "Professional & Authoritative", "Technical & Detailed", "Persuasive", "Friendly & Educational"],
                 "formats": ["Ultimate Guide", "Listicle / Top N List", "How-To Step-by-Step", "Product Comparison", "Informational Explainer"],
@@ -47,31 +73,38 @@ class ConfigManager:
                 "last_word_count": "Standard (~1,500 words)"
             }
         }
+
         if self.config_file.exists():
             try:
                 with open(self.config_file, "r", encoding="utf-8") as f:
                     loaded = json.load(f)
-                    if "last_provider" in loaded:
-                        self.data["last_provider"] = loaded["last_provider"]
-                    if "last_models" in loaded:
-                        self.data["last_models"].update(loaded["last_models"])
-                    if "custom_models" in loaded:
-                        for provider, models_list in loaded["custom_models"].items():
-                            if provider not in self.data["custom_models"]:
-                                self.data["custom_models"][provider] = []
-                            for m in models_list:
-                                if m not in self.data["custom_models"][provider]:
-                                    self.data["custom_models"][provider].append(m)
-                    if "blog_config" in loaded:
-                        b_loaded = loaded["blog_config"]
-                        for k in ["last_tone", "last_format", "last_audience", "last_intent", "last_word_count"]:
-                            if k in b_loaded:
-                                self.data["blog_config"][k] = b_loaded[k]
-                        for k in ["tones", "formats", "audiences", "intents"]:
-                            if k in b_loaded:
-                                for item in b_loaded[k]:
-                                    if item not in self.data["blog_config"][k]:
-                                        self.data["blog_config"][k].append(item)
+                    if isinstance(loaded, dict):
+                        # Deep merge loaded keys so user presets, theme, and custom models persist
+                        for key, val in loaded.items():
+                            if key == "last_models" and isinstance(val, dict):
+                                self.data["last_models"].update(val)
+                            elif key == "custom_models" and isinstance(val, dict):
+                                for provider, models_list in val.items():
+                                    if provider not in self.data["custom_models"]:
+                                        self.data["custom_models"][provider] = []
+                                    for m in models_list:
+                                        if m not in self.data["custom_models"][provider]:
+                                            self.data["custom_models"][provider].append(m)
+                            elif key == "ai_presets" and isinstance(val, dict):
+                                for p_name, p_cfg in val.items():
+                                    self.data["ai_presets"][p_name] = p_cfg
+                            elif key == "blog_config" and isinstance(val, dict):
+                                for k, b_val in val.items():
+                                    if isinstance(b_val, list):
+                                        if k not in self.data["blog_config"]:
+                                            self.data["blog_config"][k] = []
+                                        for item in b_val:
+                                            if item not in self.data["blog_config"][k]:
+                                                self.data["blog_config"][k].append(item)
+                                    else:
+                                        self.data["blog_config"][k] = b_val
+                            else:
+                                self.data[key] = val
             except Exception:
                 pass
 
@@ -83,6 +116,7 @@ class ConfigManager:
                         PROVIDER_MODELS[provider].append(model)
 
     def save(self):
+        """Saves current configuration to app_config.json."""
         try:
             with open(self.config_file, "w", encoding="utf-8") as f:
                 json.dump(self.data, f, indent=2)

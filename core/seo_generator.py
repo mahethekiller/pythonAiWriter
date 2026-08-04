@@ -1,5 +1,5 @@
 """
-SEO Blog Article Generator, Keyword Density Auditing, and Flesch Readability Engine.
+SEO Blog Article Generator, Keyword Density Auditing, Schema Generation, SERP Mining, and Humanization Engine.
 """
 
 import re
@@ -15,6 +15,10 @@ from bs4 import BeautifulSoup
 from core.config import DEFAULT_USER_AGENT
 from core.llm_client import MultiProviderLLMClient, calculate_cost_usd
 from core.exporters import DocxExporter, generate_slug
+from core.humanizer import AIHumanizer
+from core.schema_generator import SchemaGenerator
+from core.serp_crawler import SERPCrawler
+from core.sitemap_miner import SitemapMiner
 
 
 def count_syllables(word: str) -> int:
@@ -50,6 +54,8 @@ class SEOArticleGenerator:
 
     def __init__(self, llm: MultiProviderLLMClient):
         self.llm = llm
+        self.humanizer = AIHumanizer()
+        self.serp_crawler = SERPCrawler()
 
     def generate_article(
         self,
@@ -68,27 +74,54 @@ class SEOArticleGenerator:
         include_tldr: bool = True,
         include_faq: bool = True,
         cta_text: Optional[str] = None,
-        competitor_urls: List[str] = []
+        competitor_urls: List[str] = [],
+        enable_serp_mining: bool = False,
+        enable_humanizer: bool = True,
+        sitemap_url: Optional[str] = None
     ) -> Dict[str, Any]:
-        """Generates full SEO article content, calculates audit metrics, and prepares output representations."""
+        """Generates full SEO article content through multi-stage production pipeline."""
+
+        # 0. Mine Sitemap Internal Links if URL provided
+        if sitemap_url and not internal_links:
+            miner = SitemapMiner()
+            fetched_urls = miner.fetch_internal_urls(sitemap_url, max_urls=6)
+            if fetched_urls:
+                internal_links = fetched_urls
         
-        # 1. Fetch Competitor Analysis Content if provided
+        # 1. Live SERP & Competitor Research Pass
+        serp_context = ""
+        if enable_serp_mining:
+            try:
+                intel = self.serp_crawler.fetch_serp_intel(primary_keyword)
+                if intel.get("competitor_headings") or intel.get("paa_questions"):
+                    headings_str = "\n  - ".join(intel.get("competitor_headings", []))
+                    paa_str = "\n  - ".join(intel.get("paa_questions", []))
+                    serp_context = (
+                        f"\n\nLIVE COMPETITOR SERP INTEL:\n"
+                        f"• Competitor Avg Word Count: ~{intel.get('avg_word_count', 1800)} words\n"
+                        f"• Key Competitor Headings Covered in Top Rankings:\n  - {headings_str}\n"
+                        f"• Frequently Asked Questions (People Also Ask):\n  - {paa_str}\n"
+                    )
+            except Exception:
+                pass
+
+        # 2. Competitor URLs Context
         competitor_context = ""
         if competitor_urls:
             ref_texts = []
             for comp_url in competitor_urls[:2]:
                 try:
-                    res = requests.get(comp_url, headers={"User-Agent": DEFAULT_USER_AGENT}, timeout=10)
+                    res = requests.get(comp_url, headers={"User-Agent": DEFAULT_USER_AGENT}, timeout=8)
                     if res.ok:
                         s = BeautifulSoup(res.content, "html.parser")
                         main_b = s.find("main") or s.find("body") or s
-                        ref_texts.append(f"Source ({comp_url}):\n" + main_b.get_text(separator=" ", strip=True)[:2500])
+                        ref_texts.append(f"Source ({comp_url}):\n" + main_b.get_text(separator=" ", strip=True)[:2000])
                 except Exception:
                     pass
             if ref_texts:
                 competitor_context = "\n\nCompetitor Reference Content:\n" + "\n---\n".join(ref_texts)
 
-        # 2. Step A: Meta Title, Meta Description & Slug Generation
+        # 3. Step A: Meta Title, Meta Description & Slug Generation
         meta_system_prompt = (
             "You are an expert SEO strategist. Generate a high-CTR Meta Title, a compelling Meta Description, and a clean URL Slug.\n"
             "CRITICAL CONSTRAINTS:\n"
@@ -111,7 +144,7 @@ class SEOArticleGenerator:
                 "url_slug": generate_slug(topic)
             }
 
-        # 3. Step B: Article Writing Prompt Assembly
+        # 4. Step B: Article Writing Prompt Assembly
         links_instruction = ""
         if internal_links:
             formatted_links = ", ".join([f"<{url}>" for url in internal_links])
@@ -175,18 +208,23 @@ class SEOArticleGenerator:
             f"{faq_instruction}"
             f"{cta_instruction}"
             f"{custom_outline_instruction}"
+            f"{serp_context}"
         )
 
         article_user_prompt = f"Topic: {topic}\nPrimary Keyword: {primary_keyword}\n{competitor_context}"
 
         content_html, p_tok2, c_tok2, t_tok2 = self.llm._call_llm(article_system_prompt, article_user_prompt)
 
+        # 5. AI Humanizer Polish Pass
+        if enable_humanizer:
+            content_html = self.humanizer.humanize_text(content_html)
+
         total_prompt_tokens = p_tok1 + p_tok2
         total_completion_tokens = c_tok1 + c_tok2
         total_tokens = total_prompt_tokens + total_completion_tokens
         cost_usd = calculate_cost_usd(self.llm.model, total_prompt_tokens, total_completion_tokens)
 
-        # Step C: SEO Audit & Metrics Calculation
+        # 6. Step C: SEO Audit & Metrics Calculation
         clean_text_content = re.sub(r'<[^>]+>', ' ', content_html)
         words_list = re.findall(r'\b\w+\b', clean_text_content.lower())
         word_count = len(words_list)
@@ -218,7 +256,36 @@ class SEOArticleGenerator:
         h3_count = len(soup.find_all("h3"))
         img_prompt_count = content_html.count("AI Image Prompt:")
 
-        # Generate Markdown and JSON representations
+        # Dynamic Composite SEO Health Score (0 - 100)
+        score_density = 25 if (1.0 <= pk_density <= 2.5) else (18 if (0.5 <= pk_density <= 3.5) else 10)
+        score_readability = 25 if (60 <= readability_score <= 85) else (18 if (40 <= readability_score <= 95) else 10)
+        score_headings = 25 if (h2_count >= 2 and h3_count >= 1) else (18 if h2_count >= 1 else 10)
+        score_meta = 25 if (meta_title_pass and meta_desc_pass) else 15
+        
+        seo_score = score_density + score_readability + score_headings + score_meta
+        reading_time_min = max(1, round(word_count / 200))
+
+        # 7. Generate JSON-LD Schema.org Markup
+        article_schema = SchemaGenerator.generate_article_schema(
+            title=meta_data.get("meta_title", topic),
+            meta_description=meta_data.get("meta_description", ""),
+            url_slug=meta_data.get("url_slug", generate_slug(topic))
+        )
+
+        faq_items = []
+        if include_faq:
+            for h3 in soup.find_all("h3"):
+                q_text = h3.get_text(strip=True)
+                p_sibling = h3.find_next_sibling("p")
+                if p_sibling:
+                    faq_items.append({"question": q_text, "answer": p_sibling.get_text(strip=True)})
+        
+        faq_schema = SchemaGenerator.generate_faq_schema(faq_items)
+        schemas_to_inject = [article_schema]
+        if faq_schema:
+            schemas_to_inject.append(faq_schema)
+
+        # Generate Markdown and HTML with embedded Schema
         content_md = f"# {meta_data.get('meta_title', topic)}\n\n" + re.sub(r'<p>(.*?)</p>', r'\1\n\n', content_html)
         content_md = re.sub(r'<h[23]>(.*?)</h[23]>', r'\n## \1\n', content_md)
         content_md = re.sub(r'<[^>]+>', '', content_md)
@@ -233,6 +300,7 @@ class SEOArticleGenerator:
             f"{content_html}\n"
             "</body>\n</html>"
         )
+        full_html = SchemaGenerator.inject_schema_into_html(full_html, schemas_to_inject)
 
         metrics = {
             "topic": topic,
@@ -240,6 +308,8 @@ class SEOArticleGenerator:
             "meta_description": meta_data.get("meta_description", ""),
             "url_slug": meta_data.get("url_slug", generate_slug(topic)),
             "word_count": word_count,
+            "reading_time_min": reading_time_min,
+            "seo_score": seo_score,
             "primary_keyword": primary_keyword,
             "pk_count": pk_count,
             "pk_density": pk_density,
@@ -256,7 +326,8 @@ class SEOArticleGenerator:
             "cost_usd": cost_usd,
             "content_html_body": content_html,
             "full_html": full_html,
-            "content_md": content_md
+            "content_md": content_md,
+            "schemas": schemas_to_inject
         }
 
         return metrics
@@ -314,7 +385,10 @@ def run_blog_batch_process(
             include_tldr=item_data.get("include_tldr", True),
             include_faq=item_data.get("include_faq", True),
             cta_text=item_data.get("cta_text"),
-            competitor_urls=item_data.get("competitor_urls", [])
+            competitor_urls=item_data.get("competitor_urls", []),
+            enable_serp_mining=item_data.get("enable_serp_mining", False),
+            enable_humanizer=item_data.get("enable_humanizer", True),
+            sitemap_url=item_data.get("sitemap_url")
         )
 
         html_file, docx_file, md_file, json_file = "", "", "", ""
@@ -353,6 +427,7 @@ def run_blog_batch_process(
                 "meta_description": res_metrics["meta_description"],
                 "content_html": res_metrics["content_html_body"],
                 "content_markdown": res_metrics["content_md"],
+                "json_ld_schemas": res_metrics.get("schemas", []),
                 "seo_audit": {
                     "word_count": res_metrics["word_count"],
                     "primary_keyword": res_metrics["primary_keyword"],

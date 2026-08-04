@@ -53,7 +53,7 @@ class MultiProviderLLMClient:
             if not openai:
                 raise ImportError("`openai` Python package is required. Install with `pip install openai`.")
             
-            client_kwargs = {}
+            client_kwargs = {"timeout": 60.0}
             if self.api_key:
                 client_kwargs["api_key"] = self.api_key
             else:
@@ -90,7 +90,7 @@ class MultiProviderLLMClient:
             if not anthropic:
                 raise ImportError("`anthropic` Python package is required. Install with `pip install anthropic`.")
             
-            client = anthropic.Anthropic(api_key=self.api_key)
+            client = anthropic.Anthropic(api_key=self.api_key, timeout=60.0)
             response = client.messages.create(
                 model=self.model,
                 max_tokens=4096,
@@ -132,46 +132,49 @@ class MultiProviderLLMClient:
     def list_models(self) -> List[str]:
         """Queries provider API endpoints for available live models."""
         models = []
-        try:
-            if self.provider in ["OpenAI", "DeepSeek", "Groq", "Ollama / Custom API"]:
-                if not openai:
-                    return PROVIDER_MODELS.get(self.provider, [])
-                client_kwargs = {}
-                if self.api_key:
-                    client_kwargs["api_key"] = self.api_key
-                else:
-                    client_kwargs["api_key"] = "dummy_key"
+        if self.provider in ["OpenAI", "DeepSeek", "Groq", "Ollama / Custom API"]:
+            if not openai:
+                raise ImportError("`openai` Python package is required. Install with `pip install openai`.")
+            client_kwargs = {"timeout": 12.0}
+            if self.api_key:
+                client_kwargs["api_key"] = self.api_key
+            else:
+                client_kwargs["api_key"] = "dummy_key"
 
-                if self.provider == "DeepSeek":
-                    client_kwargs["base_url"] = self.base_url or "https://api.deepseek.com"
-                elif self.provider == "Groq":
-                    client_kwargs["base_url"] = self.base_url or "https://api.groq.com/openai/v1"
-                elif self.provider == "Ollama / Custom API":
-                    client_kwargs["base_url"] = self.base_url or "http://localhost:11434/v1"
-                elif self.base_url:
-                    client_kwargs["base_url"] = self.base_url
+            if self.provider == "DeepSeek":
+                client_kwargs["base_url"] = self.base_url or "https://api.deepseek.com"
+            elif self.provider == "Groq":
+                client_kwargs["base_url"] = self.base_url or "https://api.groq.com/openai/v1"
+            elif self.provider == "Ollama / Custom API":
+                client_kwargs["base_url"] = self.base_url or "http://localhost:11434/v1"
+            elif self.base_url:
+                client_kwargs["base_url"] = self.base_url
 
-                client = openai.OpenAI(**client_kwargs)
+            client = openai.OpenAI(**client_kwargs)
+            res = client.models.list()
+            models = [m.id for m in res.data]
+
+        elif self.provider == "Google Gemini":
+            if not genai:
+                raise ImportError("`google-generativeai` package is required. Install with `pip install google-generativeai`.")
+            if not self.api_key:
+                raise ValueError("Gemini API Key is required to list models.")
+            genai.configure(api_key=self.api_key)
+            for m in genai.list_models():
+                if hasattr(m, "supported_generation_methods") and "generateContent" in m.supported_generation_methods:
+                    clean_id = m.name.replace("models/", "")
+                    models.append(clean_id)
+
+        elif self.provider == "Anthropic Claude":
+            if not anthropic:
+                raise ImportError("`anthropic` Python package is required. Install with `pip install anthropic`.")
+            if not self.api_key:
+                raise ValueError("Anthropic API Key is required to list models.")
+            client = anthropic.Anthropic(api_key=self.api_key, timeout=12.0)
+            if hasattr(client, "models"):
                 res = client.models.list()
                 models = [m.id for m in res.data]
+            else:
+                models = PROVIDER_MODELS.get("Anthropic Claude", [])
 
-            elif self.provider == "Google Gemini":
-                if not genai:
-                    return PROVIDER_MODELS.get(self.provider, [])
-                genai.configure(api_key=self.api_key)
-                for m in genai.list_models():
-                    if "generateContent" in m.supported_generation_methods:
-                        clean_id = m.name.replace("models/", "")
-                        models.append(clean_id)
-
-            elif self.provider == "Anthropic Claude":
-                if not anthropic:
-                    return PROVIDER_MODELS.get(self.provider, [])
-                client = anthropic.Anthropic(api_key=self.api_key)
-                res = client.models.list()
-                models = [m.id for m in res.data]
-
-        except Exception:
-            pass
-
-        return models or PROVIDER_MODELS.get(self.provider, [])
+        return models

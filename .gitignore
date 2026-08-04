@@ -7,6 +7,11 @@
 # Local Configuration & Settings
 app_config.json
 
+# SQLite Databases & Local Storage
+*.db
+*.sqlite
+*.sqlite3
+
 # Python Bytecode & Cache
 __pycache__/
 *.py[cod]

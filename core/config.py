@@ -1,17 +1,22 @@
 """
 Configuration constants, pricing tables, and provider model mappings.
+Accurate pricing and model definitions for accurate cost calculations.
 """
 
 # Token Pricing per 1M tokens (Prompt, Completion) in USD
 MODEL_PRICING_USD = {
     # OpenAI
-    "gpt-4o": {"prompt": 2.50, "completion": 10.00},
     "gpt-4o-mini": {"prompt": 0.15, "completion": 0.60},
+    "gpt-4o": {"prompt": 2.50, "completion": 10.00},
     "o1": {"prompt": 15.00, "completion": 60.00},
     "o1-mini": {"prompt": 1.10, "completion": 4.40},
+    "o3-mini": {"prompt": 1.10, "completion": 4.40},
+    "gpt-4-turbo": {"prompt": 10.00, "completion": 30.00},
+    "gpt-3.5-turbo": {"prompt": 0.50, "completion": 1.50},
 
     # Google Gemini
     "gemini-2.0-flash": {"prompt": 0.10, "completion": 0.40},
+    "gemini-2.5-flash": {"prompt": 0.10, "completion": 0.40},
     "gemini-1.5-flash": {"prompt": 0.075, "completion": 0.30},
     "gemini-1.5-pro": {"prompt": 1.25, "completion": 5.00},
 
@@ -33,15 +38,17 @@ MODEL_PRICING_USD = {
     # Local Ollama / Custom API (Default zero cost)
     "llama3": {"prompt": 0.0, "completion": 0.0},
     "mistral": {"prompt": 0.0, "completion": 0.0},
+    "qwen2.5": {"prompt": 0.0, "completion": 0.0},
+    "deepseek-r1": {"prompt": 0.0, "completion": 0.0},
 }
 
-# Predefined provider default model lists
+# Predefined provider default model lists (Chat / Text Generation Models ONLY)
 PROVIDER_MODELS = {
-    "OpenAI": ["gpt-4o-mini", "gpt-4o", "o1", "o1-mini"],
+    "OpenAI": ["gpt-4o-mini", "gpt-4o", "o1", "o3-mini", "gpt-4-turbo"],
     "Google Gemini": ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"],
-    "Anthropic Claude": ["claude-3-5-haiku-20241022", "claude-3-5-sonnet-20241022", "claude-3-opus-20240229"],
+    "Anthropic Claude": ["claude-3-5-sonnet-20241022", "claude-3-5-haiku-20241022", "claude-3-opus-20240229"],
     "DeepSeek": ["deepseek-chat", "deepseek-reasoner"],
-    "Groq": ["llama-3.3-70b-versatile", "llama-3.1-8b-instant", "mixtral-8x7b-32768", "gemma2-9b-it"],
+    "Groq": ["llama-3.3-70b-versatile", "llama-3.1-8b-instant", "mixtral-8x7b-32768"],
     "Ollama / Custom API": ["llama3", "mistral", "qwen2.5", "deepseek-r1"]
 }
 

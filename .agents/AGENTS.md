@@ -16,3 +16,33 @@
 
 4. **UI Thread Safety**:
    - All network/LLM calls must run in background threads (`threading.Thread`) and update CustomTkinter widgets via `.after(0, callback)`.
+
+---
+
+## 🧰 Skill Catalog Index (`.agents/skills/`)
+
+### 🧠 Backend & Application Core (`skills/app-core/`)
+* **`manage-app-features`**: Orchestrate, build, and maintain new features (WordPress REST API publishing, XML Sitemap Link Miner, JSON-LD Schema.org Generator, SERP Crawler).
+* **`research-new-features`**: Perform market analysis, competitive auditing (SurferSEO, Clearscope, Jasper, Cursor IDE), and synthesize feature roadmaps.
+* **`qa-feature-tester`**: Automated headless and GUI functional testing, Python execution checks, and API payload validation.
+* **`add-ai-provider`**: Add new LLM API integrations (OpenAI, Anthropic, Gemini, Groq, DeepSeek, etc.).
+* **`build-standalone-executables`**: Compile Windows `.exe` and macOS `.app` bundles via PyInstaller.
+* **`debug-and-enhance-layout-preservation`**: Inspect & refine layout-preserving HTML rewriting & CSS parsers.
+* **`seo-optimization-and-analysis`**: SEO metadata generation, Flesch readability, and keyword density rules.
+* **`update-llm-pricing-and-models`**: Update model lists, cost calculators, and API endpoint configs.
+
+### 🎨 UI & UX Modernization Suite (`skills/ui-ux/`)
+* **`accessibility-review`**: Contrast, font sizes, screen-reader friendliness.
+* **`analyze-existing-ui`**: Audit visual layouts, color palettes, and component hierarchy.
+* **`animation-engine`**: Dynamic micro-interactions and smooth UI state transitions.
+* **`component-library`**: Modular, reusable CustomTkinter UI widgets.
+* **`desktop-theme-manager`**: Dark glassmorphism color schemes and theme tokens.
+* **`dialog-modernizer`**: Modern dialogs, alerts, and modal popups.
+* **`form-modernizer`**: Form controls, inputs, drop-downs, and error badges.
+* **`performance-review`**: UI thread safety, widget lifecycle, and rendering optimization.
+* **`qa-ui`**: Functional testing of user interface workflows.
+* **`screenshot-review`**: Visual inspection & UI comparison.
+* **`sidebar-generator`**: Navigation sidebars and collapsible panels.
+* **`table-modernizer`**: Data tables, grids, and list views.
+* **`toolbar-generator`**: Action toolbars, status bars, and header panels.
+* **`ui-modernization-master`**: Master orchestrator for complete UI redesigns.
