@@ -1,0 +1,48 @@
+# Secrets & Environment Variables (NEVER COMMIT)
+.env
+.env.local
+.env.*
+!.env.example
+
+# Local Configuration & Settings
+app_config.json
+
+# Python Bytecode & Cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Generated Output Directories & Data Files
+output_results/
+blog_articles/
+docx_articles/
+html_articles/
+md_articles/
+json_cms_payloads/
+*.xlsx
+*.csv
+!sample_batch_topics.csv
+
+# PyInstaller & Build Artifacts
+build/
+dist/
+*.spec
+*.exe
+*.app
+*.zip
+
+# Virtual Environments
+venv/
+env/
+ENV/
+.venv/
+
+# IDE & OS Junk Files
+.vscode/
+.idea/
+.gemini/
+.DS_Store
+Thumbs.db

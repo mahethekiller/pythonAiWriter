@@ -1,0 +1,3 @@
+# Test URLs for Desktop GUI Application
+https://example.com
+https://httpbin.org/html
