@@ -131,7 +131,7 @@ class SEOArticleGenerator:
         )
         meta_user_prompt = f"Topic: {topic}\nPrimary Keyword: {primary_keyword}\nSearch Intent: {search_intent}"
         
-        raw_meta, p_tok1, c_tok1, t_tok1 = self.llm._call_llm(meta_system_prompt, meta_user_prompt)
+        raw_meta, p_tok1, c_tok1, t_tok1 = self.llm.generate_text(meta_system_prompt, meta_user_prompt)
         
         try:
             clean_json_str = re.sub(r"^```(json)?\s*", "", raw_meta, flags=re.IGNORECASE)
@@ -213,7 +213,7 @@ class SEOArticleGenerator:
 
         article_user_prompt = f"Topic: {topic}\nPrimary Keyword: {primary_keyword}\n{competitor_context}"
 
-        content_html, p_tok2, c_tok2, t_tok2 = self.llm._call_llm(article_system_prompt, article_user_prompt)
+        content_html, p_tok2, c_tok2, t_tok2 = self.llm.generate_text(article_system_prompt, article_user_prompt)
 
         # 5. AI Humanizer Polish Pass
         if enable_humanizer:

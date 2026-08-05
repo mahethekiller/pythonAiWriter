@@ -116,6 +116,10 @@ class MultiProviderLLMClient:
         else:
             raise ValueError(f"Unsupported provider: '{self.provider}'")
 
+    def _call_llm(self, system_prompt: str, user_prompt: str) -> Tuple[str, int, int, int]:
+        """Backward-compatibility facade method delegating to generate_text."""
+        return self.generate_text(system_prompt, user_prompt)
+
     @classmethod
     def list_models(cls, provider: str, api_key: str = "", base_url: Optional[str] = None) -> List[str]:
         """Queries provider API endpoints for available live models."""
