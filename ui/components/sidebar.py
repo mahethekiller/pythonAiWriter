@@ -1,5 +1,6 @@
 """
 Collapsible Navigation Sidebar Component with Dedicated Standalone Feature Workspace Tabs.
+Featuring professional UI glyphs and high-contrast active state indicators.
 """
 
 import customtkinter as ctk
@@ -10,16 +11,16 @@ class SidebarComponent(ctk.CTkFrame):
     """Left Navigation Sidebar component with dedicated tabs for all major features."""
 
     NAV_ITEMS = [
-        {"id": "blog", "icon": "✍️", "label": "SEO Blog Creator"},
-        {"id": "rewriter", "icon": "🚀", "label": "Rewriter Studio"},
+        {"id": "blog", "icon": "📝", "label": "SEO Blog Creator"},
+        {"id": "rewriter", "icon": "⚡", "label": "Rewriter Studio"},
         {"id": "humanizer", "icon": "🛡️", "label": "AI Humanizer Studio"},
-        {"id": "serp", "icon": "🔍", "label": "SERP Intelligence"},
-        {"id": "gap", "icon": "📊", "label": "Keyword & Content Gap"},
-        {"id": "citation", "icon": "🤖", "label": "AI Citation Tracker"},
-        {"id": "audit", "icon": "🐸", "label": "Technical SEO & Disavow"},
-        {"id": "publisher", "icon": "🌐", "label": "CMS Publisher"},
-        {"id": "templates", "icon": "📜", "label": "AI Templates"},
-        {"id": "history", "icon": "📚", "label": "History & Exports"},
+        {"id": "serp", "icon": "🔎", "label": "SERP Intelligence"},
+        {"id": "gap", "icon": "📈", "label": "Keyword & Content Gap"},
+        {"id": "citation", "icon": "🎯", "label": "AI Citation Tracker"},
+        {"id": "audit", "icon": "🩺", "label": "Technical SEO & Disavow"},
+        {"id": "publisher", "icon": "📡", "label": "CMS Publisher"},
+        {"id": "templates", "icon": "📑", "label": "AI Templates"},
+        {"id": "history", "icon": "📦", "label": "History & Exports"},
         {"id": "settings", "icon": "⚙️", "label": "Settings & API Keys"},
     ]
 
@@ -112,7 +113,7 @@ class SidebarComponent(ctk.CTkFrame):
 
         self.lbl_prov_name = ctk.CTkLabel(
             self.provider_card,
-            text="⚡ Google Gemini",
+            text="⚡ OpenAI",
             font=ctk.CTkFont(size=12, weight="bold"),
             text_color=colors["primary"]
         )
@@ -120,7 +121,7 @@ class SidebarComponent(ctk.CTkFrame):
 
         self.lbl_model_sub = ctk.CTkLabel(
             self.provider_card,
-            text="gemini-2.0-flash",
+            text="gpt-4o-mini",
             font=ctk.CTkFont(size=10),
             text_color=colors["text_secondary"]
         )
