@@ -2,7 +2,7 @@
 Core Backend Package for LLM Integration, Web Rewriting, SEO Generation, and Technical SEO
 """
 
-from .config import MODEL_PRICING_USD, PROVIDER_MODELS, ENV_KEY_MAP, DEFAULT_USER_AGENT
+from .config import MODEL_PRICING_USD, PROVIDER_MODELS, ENV_KEY_MAP, DEFAULT_USER_AGENT, MODEL_USE_CASES, get_model_info
 from .db import DatabaseManager
 from .router import LLMRouter
 from .humanizer import AIHumanizer
@@ -26,6 +26,8 @@ __all__ = [
     "PROVIDER_MODELS",
     "ENV_KEY_MAP",
     "DEFAULT_USER_AGENT",
+    "MODEL_USE_CASES",
+    "get_model_info",
     "DatabaseManager",
     "LLMRouter",
     "AIHumanizer",

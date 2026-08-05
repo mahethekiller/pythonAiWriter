@@ -1,6 +1,6 @@
 """
 Configuration constants, pricing tables, and provider model mappings.
-Accurate pricing and model definitions for accurate cost calculations.
+Accurate pricing, model definitions, and use-case recommendations.
 """
 
 # Token Pricing per 1M tokens (Prompt, Completion) in USD
@@ -42,7 +42,44 @@ MODEL_PRICING_USD = {
     "deepseek-r1": {"prompt": 0.0, "completion": 0.0},
 }
 
-# Predefined provider default model lists (Chat / Text Generation Models ONLY)
+# Use-Case Recommendations & Performance Tiers
+MODEL_USE_CASES = {
+    # OpenAI
+    "gpt-4o-mini": {"recommendation": "⚡ Fast & Cheap (Best for Bulk Rewriting & Outlines)", "tier": "Fast", "cost": "$0.15 in / $0.60 out per 1M"},
+    "gpt-4o": {"recommendation": "🏆 High Ranking (Best for Premium Commercial SEO Articles)", "tier": "Premium", "cost": "$2.50 in / $10.00 out per 1M"},
+    "o1": {"recommendation": "🔬 Deep Reasoning (Best for Complex Technical Research)", "tier": "Reasoning", "cost": "$15.00 in / $60.00 out per 1M"},
+    "o1-mini": {"recommendation": "🔬 Fast Reasoning (Best for Technical Analysis)", "tier": "Reasoning", "cost": "$1.10 in / $4.40 out per 1M"},
+    "o3-mini": {"recommendation": "🔬 High-Speed Reasoning (Best for Technical Articles)", "tier": "Reasoning", "cost": "$1.10 in / $4.40 out per 1M"},
+    "gpt-4-turbo": {"recommendation": "🏆 Production Quality (Best for Long-Form Content)", "tier": "Premium", "cost": "$10.00 in / $30.00 out per 1M"},
+
+    # Google Gemini
+    "gemini-2.0-flash": {"recommendation": "⚡ Ultra Speed (Best for Instant Bulk Rewriting)", "tier": "Fast", "cost": "$0.10 in / $0.40 out per 1M"},
+    "gemini-2.5-flash": {"recommendation": "⚡ Ultra Speed (Best for Instant Bulk Rewriting)", "tier": "Fast", "cost": "$0.10 in / $0.40 out per 1M"},
+    "gemini-1.5-flash": {"recommendation": "⚡ High Speed (Best for Rapid Drafts)", "tier": "Fast", "cost": "$0.075 in / $0.30 out per 1M"},
+    "gemini-1.5-pro": {"recommendation": "🏆 Long Context (Best for Massive Webpages & Audits)", "tier": "Premium", "cost": "$1.25 in / $5.00 out per 1M"},
+
+    # Anthropic Claude
+    "claude-3-5-sonnet-20241022": {"recommendation": "🏆 Human Tone (Best for Natural Human Writing)", "tier": "Premium", "cost": "$3.00 in / $15.00 out per 1M"},
+    "claude-3-5-haiku-20241022": {"recommendation": "⚡ Fast & Natural (Best for Concise Articles)", "tier": "Fast", "cost": "$0.80 in / $4.00 out per 1M"},
+    "claude-3-opus-20240229": {"recommendation": "🏆 Deep Creative (Best for Advanced Copywriting)", "tier": "Premium", "cost": "$15.00 in / $75.00 out per 1M"},
+
+    # DeepSeek
+    "deepseek-chat": {"recommendation": "🔬 DeepSeek V3 (Best High Quality at Ultra Low Cost)", "tier": "Value", "cost": "$0.14 in / $0.28 out per 1M"},
+    "deepseek-reasoner": {"recommendation": "🔬 DeepSeek R1 (Best for Logic & Technical Schemas)", "tier": "Reasoning", "cost": "$0.55 in / $2.19 out per 1M"},
+
+    # Groq
+    "llama-3.3-70b-versatile": {"recommendation": "🚀 Groq Speed (Best for Ultra Low Latency Generation)", "tier": "Fast", "cost": "$0.59 in / $0.79 out per 1M"},
+    "llama-3.1-8b-instant": {"recommendation": "⚡ Micro Speed (Best for Quick Tags & Outlines)", "tier": "Fast", "cost": "$0.05 in / $0.08 out per 1M"},
+    "mixtral-8x7b-32768": {"recommendation": "🚀 Open Source (Best for Long Context)", "tier": "Value", "cost": "$0.24 in / $0.24 out per 1M"},
+
+    # Local Ollama
+    "llama3": {"recommendation": "🔒 Offline Privacy (Best for 100% Free Local Generation)", "tier": "Local", "cost": "Free ($0.00)"},
+    "mistral": {"recommendation": "🔒 Offline Privacy (Best for Fast Local Drafts)", "tier": "Local", "cost": "Free ($0.00)"},
+    "qwen2.5": {"recommendation": "🔒 Offline Privacy (Best for Multilingual Text)", "tier": "Local", "cost": "Free ($0.00)"},
+    "deepseek-r1": {"recommendation": "🔒 Offline Privacy (Best for Local Reasoning)", "tier": "Local", "cost": "Free ($0.00)"},
+}
+
+# Predefined provider default model lists
 PROVIDER_MODELS = {
     "OpenAI": ["gpt-4o-mini", "gpt-4o", "o1", "o3-mini", "gpt-4-turbo"],
     "Google Gemini": ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"],
@@ -63,3 +100,12 @@ ENV_KEY_MAP = {
 }
 
 DEFAULT_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+
+
+def get_model_info(model_name: str) -> dict:
+    """Returns model recommendation, tier, and pricing string."""
+    return MODEL_USE_CASES.get(model_name, {
+        "recommendation": "⚡ Standard AI Model",
+        "tier": "Standard",
+        "cost": "Variable Pricing"
+    })

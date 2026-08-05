@@ -28,6 +28,7 @@ from core import (
     PROVIDER_MODELS, 
     ENV_KEY_MAP,
     MODEL_PRICING_USD,
+    get_model_info,
     DatabaseManager,
     LLMRouter,
     AIHumanizer,
@@ -283,13 +284,19 @@ class RewriterGUI(ctk.CTk):
         messagebox.showinfo("Key Saved", f"Successfully saved API key for {provider}!")
 
     def _update_config_status_label(self):
-        """Updates internal state config."""
+        """Updates internal state config and refreshes live model recommendation badge."""
         provider = self.provider_combo.get()
         model = self.model_combo.get()
         if "last_models" not in self.config_data:
             self.config_data["last_models"] = {}
         self.config_data["last_models"][provider] = model
         self._save_config()
+
+        info = get_model_info(model)
+        if hasattr(self, 'model_rec_label') and self.model_rec_label:
+            self.model_rec_label.configure(text=f"💡 Recommended Use: {info['recommendation']}")
+        if hasattr(self, 'model_cost_label') and self.model_cost_label:
+            self.model_cost_label.configure(text=f"📊 Est. Token Rate: {info['cost']}")
 
     def _sync_models(self):
         """Queries AI Provider API endpoints in background thread to refresh available models."""

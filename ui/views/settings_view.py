@@ -4,7 +4,7 @@ Configuration & Settings View construction with AI Provider Presets, WordPress R
 
 import os
 import customtkinter as ctk
-from core.config import PROVIDER_MODELS
+from core.config import PROVIDER_MODELS, get_model_info
 
 
 def build_settings_view(app, parent_container):
@@ -119,8 +119,34 @@ def build_settings_view(app, parent_container):
     )
     app.sync_models_btn.pack(side="left")
 
+    # Dynamic Model Recommendation & Pricing Info Pill Card
+    app.model_info_card = ctk.CTkFrame(
+        app.settings_frame,
+        fg_color=colors["bg_card_hover"],
+        border_width=1,
+        border_color=colors["border"],
+        corner_radius=8
+    )
+    app.model_info_card.grid(row=4, column=0, columnspan=3, padx=16, pady=(2, 10), sticky="ew")
+
+    app.model_rec_label = ctk.CTkLabel(
+        app.model_info_card,
+        text="💡 Recommended Use: ⚡ Fast & Cheap (Best for Bulk Rewriting & Outlines)",
+        font=ctk.CTkFont(size=11, weight="bold"),
+        text_color=colors["text_accent"]
+    )
+    app.model_rec_label.pack(anchor="w", padx=12, pady=(6, 2))
+
+    app.model_cost_label = ctk.CTkLabel(
+        app.model_info_card,
+        text="📊 Est. Token Rate: $0.15 in / $0.60 out per 1M tokens",
+        font=ctk.CTkFont(size=10),
+        text_color=colors["text_secondary"]
+    )
+    app.model_cost_label.pack(anchor="w", padx=12, pady=(0, 6))
+
     # Rewriting Mode Row
-    ctk.CTkLabel(app.settings_frame, text="Rewriter Mode:", font=ctk.CTkFont(weight="bold"), text_color=colors["text_primary"]).grid(row=4, column=0, padx=16, pady=10, sticky="w")
+    ctk.CTkLabel(app.settings_frame, text="Rewriter Mode:", font=ctk.CTkFont(weight="bold"), text_color=colors["text_primary"]).grid(row=5, column=0, padx=16, pady=10, sticky="w")
     app.mode_combo = ctk.CTkComboBox(
         app.settings_frame, 
         values=["Layout-Preserving HTML", "Semantic HTML Clean rewrite"],
@@ -133,10 +159,10 @@ def build_settings_view(app, parent_container):
         text_color=colors["text_primary"]
     )
     app.mode_combo.set("Layout-Preserving HTML")
-    app.mode_combo.grid(row=4, column=1, padx=10, pady=10, sticky="w")
+    app.mode_combo.grid(row=5, column=1, padx=10, pady=10, sticky="w")
 
     # Concurrent Threads Row
-    ctk.CTkLabel(app.settings_frame, text="Worker Threads:", font=ctk.CTkFont(weight="bold"), text_color=colors["text_primary"]).grid(row=5, column=0, padx=16, pady=10, sticky="w")
+    ctk.CTkLabel(app.settings_frame, text="Worker Threads:", font=ctk.CTkFont(weight="bold"), text_color=colors["text_primary"]).grid(row=6, column=0, padx=16, pady=10, sticky="w")
     app.workers_combo = ctk.CTkComboBox(
         app.settings_frame, 
         values=["1", "2", "3", "5", "8", "10"],
@@ -149,13 +175,13 @@ def build_settings_view(app, parent_container):
         text_color=colors["text_primary"]
     )
     app.workers_combo.set("3")
-    app.workers_combo.grid(row=5, column=1, padx=10, pady=10, sticky="w")
+    app.workers_combo.grid(row=6, column=1, padx=10, pady=10, sticky="w")
 
     # Main Output Save Folder Row
-    ctk.CTkLabel(app.settings_frame, text="Main Save Folder:", font=ctk.CTkFont(weight="bold"), text_color=colors["text_primary"]).grid(row=6, column=0, padx=16, pady=12, sticky="w")
+    ctk.CTkLabel(app.settings_frame, text="Main Save Folder:", font=ctk.CTkFont(weight="bold"), text_color=colors["text_primary"]).grid(row=7, column=0, padx=16, pady=12, sticky="w")
     app.save_folder_entry = ctk.CTkEntry(app.settings_frame, width=340, fg_color=colors["bg_input"], border_color=colors["border"], text_color=colors["text_primary"])
     app.save_folder_entry.insert(0, os.path.join(os.getcwd(), "output_results"))
-    app.save_folder_entry.grid(row=6, column=1, padx=10, pady=12, sticky="w")
+    app.save_folder_entry.grid(row=7, column=1, padx=10, pady=12, sticky="w")
 
     app.browse_btn = ctk.CTkButton(
         app.settings_frame, 
@@ -169,7 +195,7 @@ def build_settings_view(app, parent_container):
         border_color=colors["border"],
         text_color=colors["text_primary"]
     )
-    app.browse_btn.grid(row=6, column=2, padx=5, pady=12, sticky="w")
+    app.browse_btn.grid(row=7, column=2, padx=5, pady=12, sticky="w")
 
     # =========================================================================
     # CARD 2: AI PROVIDER & MODEL PRESETS MANAGEMENT
