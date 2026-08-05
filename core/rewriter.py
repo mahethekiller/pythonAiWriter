@@ -39,15 +39,15 @@ class LayoutPreservingRewriter:
     def rewrite_html(self, raw_html: str, custom_instruction: Optional[str] = None) -> Tuple[str, int, int, int, float]:
         soup = BeautifulSoup(raw_html, "html.parser")
 
-        # Strip unneeded scripts and styles for cleaner payload
-        for tag in soup(["script", "style", "noscript", "svg", "iframe"]):
+        # Strip unneeded scripts and iframes while preserving <style> and <link> tags for CSS layout preservation
+        for tag in soup(["script", "noscript", "iframe"]):
             tag.decompose()
 
         text_nodes: List[NavigableString] = []
         for node in soup.find_all(string=True):
             if type(node) is NavigableString and not isinstance(node, (Comment, Doctype)):
                 parent_name = node.parent.name if node.parent else ""
-                if parent_name not in ["script", "style", "noscript", "svg", "iframe", "[document]"]:
+                if parent_name not in ["script", "style", "noscript", "svg", "iframe", "[document]", "head"]:
                     txt = str(node).strip()
                     if len(txt) > 2 and re.search(r"[a-zA-Z0-9]", txt):
                         text_nodes.append(node)

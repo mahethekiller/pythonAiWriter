@@ -109,9 +109,41 @@ def build_dashboard_tab(app, parent_container):
     )
     app.action_frame.pack(fill="x", padx=10, pady=5)
 
+    # Rewriting Execution Mode Selection
+    app.mode_subframe = ctk.CTkFrame(app.action_frame, fg_color="transparent")
+    app.mode_subframe.pack(fill="x", padx=10, pady=(6, 2))
+
+    ctk.CTkLabel(app.mode_subframe, text="⚡ Rewriter Execution Mode:", font=ctk.CTkFont(weight="bold", size=13), text_color="#38bdf8").pack(side="left", padx=(0, 10))
+
+    app.mode_combo = ctk.CTkComboBox(
+        app.mode_subframe, 
+        values=["Layout-Preserving HTML", "Semantic HTML Clean rewrite"],
+        command=lambda selected: app._update_config_status_label(),
+        width=260
+    )
+    app.mode_combo.set("Layout-Preserving HTML")
+    app.mode_combo.pack(side="left", padx=5)
+
+    info_mode_btn = ctk.CTkButton(
+        app.mode_subframe, 
+        text="ℹ️", 
+        width=30, 
+        height=26, 
+        fg_color="#334155", 
+        hover_color="#475569",
+        command=lambda: app.show_info_popup(
+            "Rewriter Execution Modes",
+            "1. Layout-Preserving HTML:\n"
+            "   Extracts text nodes while preserving 100% of original CSS styles, classes, IDs, DOM structure, and page layout.\n\n"
+            "2. Semantic HTML Clean rewrite:\n"
+            "   Extracts core article content (headings, paragraphs, lists) and rewrites it into clean semantic HTML without original page styling."
+        )
+    )
+    info_mode_btn.pack(side="left", padx=5)
+
     # Formats Selection
     app.formats_subframe = ctk.CTkFrame(app.action_frame, fg_color="transparent")
-    app.formats_subframe.pack(fill="x", padx=10, pady=(6, 2))
+    app.formats_subframe.pack(fill="x", padx=10, pady=(4, 2))
 
     ctk.CTkLabel(app.formats_subframe, text="SEO Export Formats:", font=ctk.CTkFont(weight="bold")).pack(side="left", padx=(0, 10))
 

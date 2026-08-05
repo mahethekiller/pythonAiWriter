@@ -107,36 +107,8 @@ def build_settings_tab(app, parent_container):
     )
     app.sync_models_btn.pack(side="left")
 
-    # Rewriting Mode Row
-    ctk.CTkLabel(app.settings_frame, text="Rewriter Mode:", font=ctk.CTkFont(weight="bold")).grid(row=4, column=0, padx=10, pady=10, sticky="w")
-    app.mode_combo = ctk.CTkComboBox(
-        app.settings_frame, 
-        values=["Layout-Preserving HTML", "Semantic HTML Clean rewrite"],
-        command=lambda selected: app._update_config_status_label(),
-        width=250
-    )
-    app.mode_combo.set("Layout-Preserving HTML")
-    app.mode_combo.grid(row=4, column=1, padx=10, pady=10, sticky="w")
-
-    info_mode_btn = ctk.CTkButton(
-        app.settings_frame, 
-        text="ℹ️", 
-        width=32, 
-        height=28, 
-        fg_color="#334155", 
-        hover_color="#475569",
-        command=lambda: app.show_info_popup(
-            "Rewriter Execution Modes",
-            "1. Layout-Preserving HTML:\n"
-            "   Extracts text nodes while preserving exact CSS classes, IDs, DOM structure, and styling.\n\n"
-            "2. Semantic HTML Clean rewrite:\n"
-            "   Extracts core article content (headers, paragraphs, lists) and rewrites it into clean semantic HTML."
-        )
-    )
-    info_mode_btn.grid(row=4, column=2, padx=5, pady=10, sticky="w")
-
     # Concurrent Threads Row
-    ctk.CTkLabel(app.settings_frame, text="Worker Threads:", font=ctk.CTkFont(weight="bold")).grid(row=5, column=0, padx=10, pady=10, sticky="w")
+    ctk.CTkLabel(app.settings_frame, text="Worker Threads:", font=ctk.CTkFont(weight="bold")).grid(row=4, column=0, padx=10, pady=10, sticky="w")
     app.workers_combo = ctk.CTkComboBox(
         app.settings_frame, 
         values=["1", "2", "3", "5", "8", "10"],
@@ -144,16 +116,16 @@ def build_settings_tab(app, parent_container):
         width=90
     )
     app.workers_combo.set("3")
-    app.workers_combo.grid(row=5, column=1, padx=10, pady=10, sticky="w")
+    app.workers_combo.grid(row=4, column=1, padx=10, pady=10, sticky="w")
 
     # Main Output Save Folder Row
-    ctk.CTkLabel(app.settings_frame, text="Main Save Folder:", font=ctk.CTkFont(weight="bold")).grid(row=6, column=0, padx=10, pady=10, sticky="w")
+    ctk.CTkLabel(app.settings_frame, text="Main Save Folder:", font=ctk.CTkFont(weight="bold")).grid(row=5, column=0, padx=10, pady=10, sticky="w")
     app.save_folder_entry = ctk.CTkEntry(app.settings_frame, width=320)
     app.save_folder_entry.insert(0, os.path.join(os.getcwd(), "output_results"))
-    app.save_folder_entry.grid(row=6, column=1, padx=10, pady=10, sticky="w")
+    app.save_folder_entry.grid(row=5, column=1, padx=10, pady=10, sticky="w")
 
     app.browse_btn = ctk.CTkButton(app.settings_frame, text="Browse...", command=app._browse_save_folder, width=90)
-    app.browse_btn.grid(row=6, column=2, padx=5, pady=10, sticky="w")
+    app.browse_btn.grid(row=5, column=2, padx=5, pady=10, sticky="w")
 
     # About & Developer Credits Frame
     app.about_frame = ctk.CTkFrame(

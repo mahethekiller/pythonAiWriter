@@ -38,36 +38,60 @@ class DocxExporter:
 
         soup = BeautifulSoup(html_content, "html.parser")
         
-        for element in soup.children:
-            if element.name == "h1":
-                p = doc.add_heading(level=1)
-                run = p.add_run(element.get_text())
-                run.font.size = Pt(20)
-                run.font.color.rgb = RGBColor(15, 23, 42)
-                run.font.bold = True
-            elif element.name == "h2":
-                p = doc.add_heading(level=2)
-                run = p.add_run(element.get_text())
-                run.font.size = Pt(16)
-                run.font.color.rgb = RGBColor(30, 58, 138)
-                run.font.bold = True
-            elif element.name == "h3":
-                p = doc.add_heading(level=3)
-                run = p.add_run(element.get_text())
-                run.font.size = Pt(13)
-                run.font.color.rgb = RGBColor(37, 99, 235)
-                run.font.bold = True
-            elif element.name == "p":
+        # Target body or main container, falling back to full soup
+        body = soup.find("body") or soup.find("main") or soup
+
+        # Extract block-level tags
+        block_tags = body.find_all(["h1", "h2", "h3", "h4", "h5", "h6", "p", "ul", "ol", "blockquote"])
+
+        if not block_tags:
+            # Fallback: Extract non-empty text lines into paragraphs
+            raw_text = body.get_text()
+            lines = [line.strip() for line in raw_text.splitlines() if line.strip()]
+            for line in lines:
                 p = doc.add_paragraph()
                 p.paragraph_format.line_spacing = 1.15
                 p.paragraph_format.space_after = Pt(6)
-                DocxExporter._add_html_runs(p, element)
-            elif element.name in ["ul", "ol"]:
-                style = 'List Bullet' if element.name == "ul" else 'List Number'
-                for li in element.find_all("li", recursive=False):
-                    p = doc.add_paragraph(style=style)
-                    p.paragraph_format.space_after = Pt(3)
-                    DocxExporter._add_html_runs(p, li)
+                p.add_run(line)
+        else:
+            for element in block_tags:
+                if element.name in ["ul", "ol"]:
+                    style = 'List Bullet' if element.name == "ul" else 'List Number'
+                    for li in element.find_all("li", recursive=False):
+                        p = doc.add_paragraph(style=style)
+                        p.paragraph_format.space_after = Pt(3)
+                        DocxExporter._add_html_runs(p, li)
+                elif element.name == "li":
+                    # Handled recursively by parent ul/ol
+                    continue
+                elif element.name == "h1":
+                    p = doc.add_heading(level=1)
+                    run = p.add_run(element.get_text())
+                    run.font.size = Pt(20)
+                    run.font.color.rgb = RGBColor(15, 23, 42)
+                    run.font.bold = True
+                elif element.name == "h2":
+                    p = doc.add_heading(level=2)
+                    run = p.add_run(element.get_text())
+                    run.font.size = Pt(16)
+                    run.font.color.rgb = RGBColor(30, 58, 138)
+                    run.font.bold = True
+                elif element.name == "h3":
+                    p = doc.add_heading(level=3)
+                    run = p.add_run(element.get_text())
+                    run.font.size = Pt(13)
+                    run.font.color.rgb = RGBColor(37, 99, 235)
+                    run.font.bold = True
+                elif element.name in ["h4", "h5", "h6"]:
+                    p = doc.add_heading(level=4)
+                    run = p.add_run(element.get_text())
+                    run.font.size = Pt(11.5)
+                    run.font.bold = True
+                elif element.name in ["p", "blockquote"]:
+                    p = doc.add_paragraph()
+                    p.paragraph_format.line_spacing = 1.15
+                    p.paragraph_format.space_after = Pt(6)
+                    DocxExporter._add_html_runs(p, element)
 
         out_file = Path(output_path)
         doc.save(str(out_file))
