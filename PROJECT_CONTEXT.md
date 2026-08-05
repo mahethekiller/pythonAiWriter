@@ -32,7 +32,7 @@ PythonAiWriter/
 │   ├── __init__.py             # Package API exports
 │   ├── config.py               # Model pricing tables, smart pattern matching model recommendations, & provider defaults
 │   ├── db.py                   # DatabaseManager for SQLite3 persistent storage
-│   ├── router.py               # LLMRouter for intelligent fast/cheap vs premium model routing
+│   ├── router.py               # LLMRouter for intelligent fast/cheap vs premium model routing (call_task & completion facades)
 │   ├── llm_client.py           # MultiProviderLLMClient (API calls, _call_llm facade, & dynamic model listing)
 │   ├── humanizer.py            # AIHumanizer (anti-AI cliché filter & naturalization polish)
 │   ├── readability.py          # ReadabilityAuditor (Flesch Reading Ease & keyword density meters)
