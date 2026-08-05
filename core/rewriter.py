@@ -36,18 +36,26 @@ class LayoutPreservingRewriter:
     def __init__(self, llm_client: MultiProviderLLMClient):
         self.client = llm_client
 
-    def rewrite_html(self, raw_html: str, custom_instruction: Optional[str] = None) -> Tuple[str, int, int, int, float]:
+    def rewrite_html(self, raw_html: str, custom_instruction: Optional[str] = None, include_header_footer: bool = False) -> Tuple[str, int, int, int, float]:
         soup = BeautifulSoup(raw_html, "html.parser")
 
         # Strip unneeded scripts and iframes while preserving <style> and <link> tags for CSS layout preservation
-        for tag in soup(["script", "noscript", "iframe"]):
+        strip_tags = ["script", "noscript", "iframe"]
+        if not include_header_footer:
+            strip_tags.extend(["header", "footer", "nav"])
+
+        for tag in soup(strip_tags):
             tag.decompose()
+
+        skip_parents = ["script", "style", "noscript", "svg", "iframe", "[document]", "head"]
+        if not include_header_footer:
+            skip_parents.extend(["header", "footer", "nav"])
 
         text_nodes: List[NavigableString] = []
         for node in soup.find_all(string=True):
             if type(node) is NavigableString and not isinstance(node, (Comment, Doctype)):
                 parent_name = node.parent.name if node.parent else ""
-                if parent_name not in ["script", "style", "noscript", "svg", "iframe", "[document]", "head"]:
+                if parent_name not in skip_parents:
                     txt = str(node).strip()
                     if len(txt) > 2 and re.search(r"[a-zA-Z0-9]", txt):
                         text_nodes.append(node)
@@ -137,6 +145,7 @@ def run_batch_process(
     max_workers: int = 3,
     custom_instruction: Optional[str] = None,
     base_url: Optional[str] = None,
+    include_header_footer: bool = False,
     progress_cb: Optional[Callable[[int, int, str], None]] = None,
     log_cb: Optional[Callable[[str], None]] = None
 ) -> Tuple[pd.DataFrame, Path, Path, Dict[str, Any]]:
@@ -183,7 +192,10 @@ def run_batch_process(
 
             if log_cb:
                 log_cb(f"Rewriting: {url}...")
-            rewritten_html, p_tok, c_tok, t_tok, cost = rewriter.rewrite_html(raw_html, custom_instruction)
+            if isinstance(rewriter, LayoutPreservingRewriter):
+                rewritten_html, p_tok, c_tok, t_tok, cost = rewriter.rewrite_html(raw_html, custom_instruction, include_header_footer=include_header_footer)
+            else:
+                rewritten_html, p_tok, c_tok, t_tok, cost = rewriter.rewrite_html(raw_html, custom_instruction)
 
             res["Status"] = "Success"
             res["Prompt_Tokens"] = p_tok

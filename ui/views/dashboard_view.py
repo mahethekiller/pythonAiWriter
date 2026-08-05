@@ -105,8 +105,66 @@ def build_dashboard_view(app, parent_container):
     )
     app.action_frame.pack(fill="x", padx=14, pady=8)
 
+    # Rewriting Execution Mode Selection Row
+    app.mode_subframe = ctk.CTkFrame(app.action_frame, fg_color="transparent")
+    app.mode_subframe.pack(fill="x", padx=16, pady=(14, 4))
+
+    ctk.CTkLabel(
+        app.mode_subframe, 
+        text="⚡ Rewriter Execution Mode:", 
+        font=ctk.CTkFont(size=13, weight="bold"),
+        text_color=colors["text_primary"]
+    ).pack(side="left", padx=(0, 10))
+
+    app.mode_combo = ctk.CTkComboBox(
+        app.mode_subframe, 
+        values=["Layout-Preserving HTML", "Semantic HTML Clean rewrite"],
+        command=lambda selected: app._update_config_status_label(),
+        width=260,
+        fg_color=colors["bg_input"],
+        border_color=colors["border"],
+        button_color=colors["border"],
+        dropdown_fg_color=colors["bg_card"],
+        text_color=colors["text_primary"]
+    )
+    app.mode_combo.set("Layout-Preserving HTML")
+    app.mode_combo.pack(side="left", padx=5)
+
+    info_mode_btn = ctk.CTkButton(
+        app.mode_subframe, 
+        text="ℹ️", 
+        width=28, 
+        height=24, 
+        fg_color=colors["bg_card_hover"], 
+        hover_color=colors["border"],
+        text_color=colors["text_primary"],
+        command=lambda: app.show_info_popup(
+            "Rewriter Execution Modes",
+            "1. Layout-Preserving HTML:\n"
+            "   Extracts text nodes while preserving 100% of original CSS styles, classes, IDs, DOM structure, and page layout.\n\n"
+            "2. Semantic HTML Clean rewrite:\n"
+            "   Extracts core article content (headings, paragraphs, lists) and rewrites it into clean semantic HTML without original page styling."
+        )
+    )
+    info_mode_btn.pack(side="left", padx=5)
+
+    # Header / Footer Navigation Option Row
+    app.hf_subframe = ctk.CTkFrame(app.action_frame, fg_color="transparent")
+    app.hf_subframe.pack(fill="x", padx=16, pady=(4, 4))
+
+    app.include_header_footer_var = ctk.BooleanVar(value=False)
+    app.include_header_footer_checkbox = ctk.CTkCheckBox(
+        app.hf_subframe, 
+        text="📌 Include Header & Footer Navigation Elements", 
+        variable=app.include_header_footer_var,
+        font=ctk.CTkFont(size=12, weight="bold"),
+        fg_color=colors["primary"],
+        text_color=colors["text_primary"]
+    )
+    app.include_header_footer_checkbox.pack(side="left")
+
     app.formats_subframe = ctk.CTkFrame(app.action_frame, fg_color="transparent")
-    app.formats_subframe.pack(fill="x", padx=16, pady=(14, 6))
+    app.formats_subframe.pack(fill="x", padx=16, pady=(4, 6))
 
     ctk.CTkLabel(
         app.formats_subframe, 

@@ -931,6 +931,7 @@ class RewriterGUI(ctk.CTk):
 
         gen_html = self.html_var.get()
         gen_docx = self.docx_var.get()
+        inc_hf = getattr(self, 'include_header_footer_var', ctk.BooleanVar(value=False)).get()
 
         self.is_processing = True
         self.start_time = time.time()
@@ -941,11 +942,11 @@ class RewriterGUI(ctk.CTk):
 
         threading.Thread(
             target=self._worker_thread,
-            args=(urls, provider, api_key, model, mode, custom_prompt, gen_html, gen_docx, Path(main_save_folder), max_workers, base_url),
+            args=(urls, provider, api_key, model, mode, custom_prompt, gen_html, gen_docx, Path(main_save_folder), max_workers, base_url, inc_hf),
             daemon=True
         ).start()
 
-    def _worker_thread(self, urls, provider, api_key, model, mode, custom_prompt, gen_html, gen_docx, main_save_folder, max_workers, base_url):
+    def _worker_thread(self, urls, provider, api_key, model, mode, custom_prompt, gen_html, gen_docx, main_save_folder, max_workers, base_url, include_header_footer=False):
         def _progress_cb(completed, total, current_url):
             frac = completed / total
             def _update():
@@ -965,6 +966,7 @@ class RewriterGUI(ctk.CTk):
                 max_workers=max_workers,
                 custom_instruction=custom_prompt,
                 base_url=base_url,
+                include_header_footer=include_header_footer,
                 progress_cb=_progress_cb,
                 log_cb=self._log
             )
