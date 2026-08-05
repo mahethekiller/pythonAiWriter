@@ -953,17 +953,17 @@ class RewriterGUI(ctk.CTk):
             self.after(0, _update)
 
         try:
-            df, excel_path, cost_file, run_output_dir, metrics = run_batch_process(
+            df, excel_path, run_output_dir, metrics = run_batch_process(
                 urls=urls,
                 provider=provider,
                 api_key=api_key,
                 model=model,
                 mode=mode,
-                custom_prompt=custom_prompt,
                 generate_html=gen_html,
                 generate_docx=gen_docx,
                 main_save_folder=main_save_folder,
                 max_workers=max_workers,
+                custom_instruction=custom_prompt,
                 base_url=base_url,
                 progress_cb=_progress_cb,
                 log_cb=self._log
@@ -971,15 +971,18 @@ class RewriterGUI(ctk.CTk):
 
             self.output_dir = run_output_dir
             self.excel_path = excel_path
-            self.cost_report_path = cost_file
+            self.cost_report_path = excel_path
             duration_sec = int(time.time() - self.start_time)
 
             def _on_complete():
                 self.is_processing = False
                 self.start_btn.configure(state="normal", text="🚀 Start Batch Rewriting")
-                self.open_folder_btn.configure(state="normal")
-                self.open_excel_btn.configure(state="normal")
-                self.open_cost_btn.configure(state="normal")
+                if hasattr(self, 'open_folder_btn') and self.open_folder_btn:
+                    self.open_folder_btn.configure(state="normal")
+                if hasattr(self, 'open_excel_btn') and self.open_excel_btn:
+                    self.open_excel_btn.configure(state="normal")
+                if hasattr(self, 'open_cost_btn') and self.open_cost_btn:
+                    self.open_cost_btn.configure(state="normal")
 
                 self.statusbar.set_status("Ready", is_running=False)
                 self.statusbar.set_task("Completed rewriting run")
