@@ -46,7 +46,7 @@ class LLMRouter:
         )
 
         start_t = time.time()
-        content, p_tokens, c_tokens, t_tokens = client._call_llm(system_prompt, user_prompt)
+        content, p_tokens, c_tokens, t_tokens = client.generate_text(system_prompt, user_prompt)
         latency = round(time.time() - start_t, 2)
         cost_usd = calculate_cost_usd(model, p_tokens, c_tokens)
 
@@ -65,3 +65,21 @@ class LLMRouter:
             pass
 
         return content, p_tokens, c_tokens, t_tokens
+
+    def completion(
+        self, 
+        task_type: str, 
+        prompt: str, 
+        temperature: float = 0.7, 
+        system_prompt: str = "You are an expert search engine assistant."
+    ) -> Tuple[str, Dict[str, Any]]:
+        """Convenience method returning (content, metrics_dict)."""
+        content, p_tokens, c_tokens, t_tokens = self.call_task(task_type, system_prompt, prompt)
+        cost_usd = calculate_cost_usd(self.active_model, p_tokens, c_tokens)
+        metrics = {
+            "prompt_tokens": p_tokens,
+            "completion_tokens": c_tokens,
+            "total_tokens": t_tokens,
+            "cost_usd": cost_usd
+        }
+        return content, metrics
