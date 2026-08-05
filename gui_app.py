@@ -292,11 +292,24 @@ class RewriterGUI(ctk.CTk):
         self.config_data["last_models"][provider] = model
         self._save_config()
 
+        # Update Settings Recommendation Card
         info = get_model_info(model)
         if hasattr(self, 'model_rec_label') and self.model_rec_label:
             self.model_rec_label.configure(text=f"💡 Recommended Use: {info['recommendation']}")
         if hasattr(self, 'model_cost_label') and self.model_cost_label:
             self.model_cost_label.configure(text=f"📊 Est. Token Rate: {info['cost']}")
+
+        # Check if current (provider, model) matches a saved preset
+        matching_preset = None
+        presets_dict = self.config_data.get("ai_presets", {})
+        for p_name, p_cfg in presets_dict.items():
+            if p_cfg.get("provider") == provider and p_cfg.get("model") == model:
+                matching_preset = p_name
+                break
+
+        # Sync Top Toolbar Display
+        if hasattr(self, 'toolbar') and self.toolbar:
+            self.toolbar.update_provider_badge(provider, model, active_preset=matching_preset)
 
     def _sync_models(self):
         """Queries AI Provider API endpoints in background thread to refresh available models."""
@@ -351,6 +364,8 @@ class RewriterGUI(ctk.CTk):
         self.settings_preset_combo.configure(values=preset_names)
         if preset_names:
             self.settings_preset_combo.set(preset_names[0])
+
+        self._update_config_status_label()
 
     def _save_ai_preset(self):
         """Saves current AI Provider, Model, and Threads as a named Preset."""

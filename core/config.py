@@ -103,9 +103,36 @@ DEFAULT_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.
 
 
 def get_model_info(model_name: str) -> dict:
-    """Returns model recommendation, tier, and pricing string."""
-    return MODEL_USE_CASES.get(model_name, {
-        "recommendation": "⚡ Standard AI Model",
-        "tier": "Standard",
-        "cost": "Variable Pricing"
-    })
+    """Returns model recommendation, tier, and pricing string with smart fallbacks."""
+    if model_name in MODEL_USE_CASES:
+        return MODEL_USE_CASES[model_name]
+
+    m_lower = model_name.lower()
+    
+    # Smart Fallback Matching for synced/custom models
+    if "flash" in m_lower or "mini" in m_lower or "nano" in m_lower or "lite" in m_lower:
+        rec = "⚡ High Speed & Low Cost (Best for Bulk Generation & Rapid Drafts)"
+        tier = "Fast"
+        cost_str = f"${MODEL_PRICING_USD[model_name]['prompt']:.2f} in / ${MODEL_PRICING_USD[model_name]['completion']:.2f} out per 1M" if model_name in MODEL_PRICING_USD else "Low Cost / High Speed Tier"
+    elif "pro" in m_lower or "opus" in m_lower or "sonnet" in m_lower or "gpt-4" in m_lower or "gpt-5" in m_lower:
+        rec = "🏆 Premium Quality (Best for High-Ranking Commercial Articles)"
+        tier = "Premium"
+        cost_str = f"${MODEL_PRICING_USD[model_name]['prompt']:.2f} in / ${MODEL_PRICING_USD[model_name]['completion']:.2f} out per 1M" if model_name in MODEL_PRICING_USD else "Standard Commercial API Rates"
+    elif "reasoner" in m_lower or "r1" in m_lower or "o1" in m_lower or "o3" in m_lower or "o4" in m_lower:
+        rec = "🔬 Deep Reasoning (Best for Technical Content & Logic)"
+        tier = "Reasoning"
+        cost_str = "Standard Reasoning Rates"
+    elif "llama" in m_lower or "mistral" in m_lower or "qwen" in m_lower or "gemma" in m_lower:
+        rec = "🔒 Open Source / Offline (Best for Privacy & Custom Deployments)"
+        tier = "Local"
+        cost_str = "Free / Local Host"
+    else:
+        rec = "⚡ Standard AI Model (Best for General Article Generation)"
+        tier = "Standard"
+        cost_str = "Standard API Pricing"
+
+    return {
+        "recommendation": rec,
+        "tier": tier,
+        "cost": cost_str
+    }

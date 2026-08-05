@@ -161,8 +161,8 @@ class ToolbarComponent(ctk.CTkFrame):
         # AI Provider & Model Presets Dropdown Selector
         self.provider_pill = ctk.CTkOptionMenu(
             self.right_container,
-            values=["Select Preset..."],
-            width=240,
+            values=["Select Model / Preset..."],
+            width=250,
             height=34,
             font=ctk.CTkFont(size=11, weight="bold"),
             fg_color=colors["bg_card"],
@@ -200,16 +200,22 @@ class ToolbarComponent(ctk.CTkFrame):
     def update_preset_list(self, preset_names: List[str], current_preset: str = None):
         """Updates top toolbar preset dropdown values."""
         if not preset_names:
-            preset_names = ["Select Preset..."]
+            preset_names = ["Select Model / Preset..."]
         self.provider_pill.configure(values=preset_names)
         if current_preset and current_preset in preset_names:
             self.provider_pill.set(current_preset)
-        elif preset_names:
-            self.provider_pill.set(preset_names[0])
 
-    def update_provider_badge(self, provider: str, model: str):
-        """Updates AI provider pill text if not matching a preset name."""
-        pass
+    def update_provider_badge(self, provider: str, model: str, active_preset: str = None):
+        """Updates top toolbar dropdown to reflect active provider and model or preset."""
+        current_values = list(self.provider_pill.cget("values"))
+        if active_preset and active_preset in current_values:
+            self.provider_pill.set(active_preset)
+        else:
+            display_text = f"🤖 {provider}: {model}"
+            if display_text not in current_values:
+                current_values.insert(0, display_text)
+                self.provider_pill.configure(values=current_values)
+            self.provider_pill.set(display_text)
 
     def update_cost_badge(self, cost_text: str):
         """Updates cost badge text."""
@@ -221,7 +227,7 @@ class ToolbarComponent(ctk.CTkFrame):
 
     def _on_preset_selected(self, preset_name: str):
         """Callback when user picks a preset from top toolbar dropdown."""
-        if self.on_preset_change:
+        if self.on_preset_change and not preset_name.startswith("🤖 "):
             self.on_preset_change(preset_name)
 
     def _handle_theme_toggle(self):
