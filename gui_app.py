@@ -284,22 +284,23 @@ class RewriterGUI(ctk.CTk):
         messagebox.showinfo("Key Saved", f"Successfully saved API key for {provider}!")
 
     def _update_config_status_label(self):
-        """Updates internal state config and refreshes live model recommendation badge."""
+        """Updates internal state config and syncs all UI model indicators across top toolbar, sidebar, status bar, and settings card."""
         provider = self.provider_combo.get()
         model = self.model_combo.get()
+        workers = int(self.workers_combo.get()) if hasattr(self, 'workers_combo') else 3
         if "last_models" not in self.config_data:
             self.config_data["last_models"] = {}
         self.config_data["last_models"][provider] = model
         self._save_config()
 
-        # Update Settings Recommendation Card
+        # 1. Update Settings Recommendation Card
         info = get_model_info(model)
         if hasattr(self, 'model_rec_label') and self.model_rec_label:
             self.model_rec_label.configure(text=f"💡 Recommended Use: {info['recommendation']}")
         if hasattr(self, 'model_cost_label') and self.model_cost_label:
             self.model_cost_label.configure(text=f"📊 Est. Token Rate: {info['cost']}")
 
-        # Check if current (provider, model) matches a saved preset
+        # 2. Check if current (provider, model) matches a saved preset
         matching_preset = None
         presets_dict = self.config_data.get("ai_presets", {})
         for p_name, p_cfg in presets_dict.items():
@@ -307,9 +308,14 @@ class RewriterGUI(ctk.CTk):
                 matching_preset = p_name
                 break
 
-        # Sync Top Toolbar Display
+        # 3. Sync Top Toolbar Display
         if hasattr(self, 'toolbar') and self.toolbar:
             self.toolbar.update_provider_badge(provider, model, active_preset=matching_preset)
+            self.toolbar.update_threads_badge(workers)
+
+        # 4. Sync Left Sidebar Bottom Active Provider Card
+        if hasattr(self, 'sidebar') and self.sidebar:
+            self.sidebar.update_provider_info(provider, model, workers, 0.003)
 
     def _sync_models(self):
         """Queries AI Provider API endpoints in background thread to refresh available models."""
@@ -405,11 +411,24 @@ class RewriterGUI(ctk.CTk):
             self._refresh_ai_presets_list()
             messagebox.showinfo("Preset Deleted", f"Deleted preset '{preset_name}'.")
 
-    def _apply_ai_preset(self, preset_name: str):
-        """Applies configuration from selected preset name."""
+    def _apply_ai_preset(self, selection: str):
+        """Applies configuration from selected preset name or custom model pill choice."""
+        if selection.startswith("🤖 "):
+            raw = selection.replace("🤖 ", "").strip()
+            if ":" in raw:
+                parts = raw.split(":", 1)
+                p = parts[0].strip()
+                m = parts[1].strip()
+                if p in PROVIDER_MODELS:
+                    self.provider_combo.set(p)
+                    self._on_provider_change(p)
+                    self.model_combo.set(m)
+                    self._update_config_status_label()
+            return
+
         presets_dict = self.config_data.get("ai_presets", {})
-        if preset_name in presets_dict:
-            cfg = presets_dict[preset_name]
+        if selection in presets_dict:
+            cfg = presets_dict[selection]
             p = cfg.get("provider", "OpenAI")
             m = cfg.get("model", "gpt-4o-mini")
             w = cfg.get("workers", "3")
@@ -419,7 +438,7 @@ class RewriterGUI(ctk.CTk):
             self.model_combo.set(m)
             self.workers_combo.set(w)
             self._update_config_status_label()
-            self.statusbar.set_task(f"Active Preset: {preset_name}")
+            self.statusbar.set_task(f"Active Preset: {selection}")
 
     def _run_standalone_humanizer(self):
         """Runs standalone AI Humanizer polish pass."""

@@ -162,7 +162,7 @@ class ToolbarComponent(ctk.CTkFrame):
         self.provider_pill = ctk.CTkOptionMenu(
             self.right_container,
             values=["Select Model / Preset..."],
-            width=250,
+            width=260,
             height=34,
             font=ctk.CTkFont(size=11, weight="bold"),
             fg_color=colors["bg_card"],
@@ -226,8 +226,8 @@ class ToolbarComponent(ctk.CTkFrame):
         self.lbl_threads_val.configure(text=f"Threads  {thread_count}")
 
     def _on_preset_selected(self, preset_name: str):
-        """Callback when user picks a preset from top toolbar dropdown."""
-        if self.on_preset_change and not preset_name.startswith("🤖 "):
+        """Callback when user picks a preset or model from top toolbar dropdown."""
+        if self.on_preset_change:
             self.on_preset_change(preset_name)
 
     def _handle_theme_toggle(self):
