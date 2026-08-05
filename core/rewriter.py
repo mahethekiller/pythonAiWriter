@@ -12,7 +12,7 @@ from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Dict, List, Tuple, Optional, Callable, Any
 import pandas as pd
-from bs4 import BeautifulSoup, NavigableString
+from bs4 import BeautifulSoup, NavigableString, Comment, Doctype
 
 from core.config import DEFAULT_USER_AGENT
 from core.llm_client import MultiProviderLLMClient, calculate_cost_usd
@@ -44,8 +44,8 @@ class LayoutPreservingRewriter:
             tag.decompose()
 
         text_nodes: List[NavigableString] = []
-        for node in soup.find_all(text=True):
-            if isinstance(node, NavigableString) and not node.is_element:
+        for node in soup.find_all(string=True):
+            if type(node) is NavigableString and not isinstance(node, (Comment, Doctype)):
                 parent_name = node.parent.name if node.parent else ""
                 if parent_name not in ["script", "style", "noscript", "svg", "iframe", "[document]"]:
                     txt = str(node).strip()
