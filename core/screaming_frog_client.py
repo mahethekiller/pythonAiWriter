@@ -7,7 +7,7 @@ import os
 import subprocess
 import requests
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, Tuple
 
 
 class ScreamingFrogClient:
