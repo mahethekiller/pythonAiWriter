@@ -123,7 +123,7 @@ class DatabaseManager:
             conn.commit()
 
     def get_serp_snapshot(self, keyword: str) -> Optional[Dict[str, Any]]:
-        """Retrieves cached SERP data for a keyword if available."""
+        """Retrieves cached SERP data for a keyword if available and non-empty."""
         clean_kw = keyword.lower().strip()
         with self._get_connection() as conn:
             cursor = conn.cursor()
@@ -131,9 +131,14 @@ class DatabaseManager:
             row = cursor.fetchone()
             if row:
                 try:
-                    return json.loads(row["serp_data_json"])
+                    data = json.loads(row["serp_data_json"])
+                    if data and data.get("competitor_urls") and len(data["competitor_urls"]) > 0:
+                        return data
+                    else:
+                        cursor.execute("DELETE FROM serp_snapshots WHERE keyword = ?", (clean_kw,))
+                        conn.commit()
                 except Exception:
-                    return None
+                    pass
         return None
 
     # =========================================================================

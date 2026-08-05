@@ -23,11 +23,11 @@ class SERPCrawler:
 
     def fetch_serp_intel(self, primary_keyword: str) -> Dict[str, Any]:
         """Fetches organic search results, competitor headings, and PAA questions (cached in SQLite)."""
-        clean_kw = primary_keyword.strip()
+        clean_kw = primary_keyword.lower().strip()
 
-        # 1. Check SQLite cache first (ONLY return if cache contains valid URLs)
+        # 1. Check SQLite cache first (ONLY return if cache contains valid non-empty URLs)
         cached = self.db.get_serp_snapshot(clean_kw)
-        if cached and cached.get("competitor_urls"):
+        if cached and cached.get("competitor_urls") and len(cached["competitor_urls"]) > 0:
             return cached
 
         intel = {
@@ -152,7 +152,7 @@ class SERPCrawler:
             intel["competitor_headings"] = list(dict.fromkeys(headings))[:15]
 
         # 6. Save in SQLite ONLY if we got actual competitor results
-        if intel["competitor_urls"]:
+        if intel["competitor_urls"] and len(intel["competitor_urls"]) > 0:
             self.db.save_serp_snapshot(clean_kw, intel)
 
         return intel
