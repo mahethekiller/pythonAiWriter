@@ -30,10 +30,10 @@ PythonAiWriter/
 │
 ├── core/                        # 🧠 Core Backend & LLM Engine Package
 │   ├── __init__.py             # Package API exports
-│   ├── config.py               # Model pricing tables, provider defaults, & constants
+│   ├── config.py               # Model pricing tables, smart pattern matching model recommendations, & provider defaults
 │   ├── db.py                   # DatabaseManager for SQLite3 persistent storage
 │   ├── router.py               # LLMRouter for intelligent fast/cheap vs premium model routing
-│   ├── llm_client.py           # MultiProviderLLMClient (API calls & dynamic model listing)
+│   ├── llm_client.py           # MultiProviderLLMClient (API calls, _call_llm facade, & dynamic model listing)
 │   ├── humanizer.py            # AIHumanizer (anti-AI cliché filter & naturalization polish)
 │   ├── readability.py          # ReadabilityAuditor (Flesch Reading Ease & keyword density meters)
 │   ├── semrush_gap.py          # SemrushGapAnalyzer (domain vs competitor keyword/content gap)
