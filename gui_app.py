@@ -1153,6 +1153,12 @@ class RewriterGUI(ctk.CTk):
             def _on_complete():
                 self.is_processing = False
                 self.blog_start_btn.configure(state="normal", text="🚀 Generate SEO Blog Article(s)")
+                if hasattr(self, 'open_folder_btn') and self.open_folder_btn:
+                    self.open_folder_btn.configure(state="normal")
+                if hasattr(self, 'open_excel_btn') and self.open_excel_btn:
+                    self.open_excel_btn.configure(state="normal")
+                if hasattr(self, 'open_cost_btn') and self.open_cost_btn:
+                    self.open_cost_btn.configure(state="normal")
                 self.statusbar.set_status("Ready", is_running=False)
                 self.statusbar.set_task("Completed SEO article generation")
                 self.toolbar.update_cost_badge(f"Est. Cost  ${metrics['total_cost_usd']:.3f} USD")

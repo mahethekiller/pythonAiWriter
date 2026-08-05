@@ -1,6 +1,7 @@
 """
 SEO Blog Creator View construction.
-Displays all configuration sections on a single unified page with dynamic Single/Batch CSV mode swapping.
+Displays all configuration sections on a single unified page with dynamic Single/Batch CSV mode swapping,
+live Activity Logs console panel, and dated output shortcut buttons.
 """
 
 import customtkinter as ctk
@@ -383,3 +384,91 @@ def build_blog_view(app, parent_container):
         text_color="#FFFFFF"
     )
     app.blog_start_btn.pack(side="left", fill="x", expand=True, padx=(10, 0))
+
+    # =========================================================================
+    # CARD 5: ACTIVITY LOGS CONSOLE PANEL
+    # =========================================================================
+    if not hasattr(app, 'log_frame') or not app.log_frame:
+        app.log_frame = ctk.CTkFrame(
+            parent_container, 
+            fg_color=colors["bg_card"], 
+            border_width=1, 
+            border_color=colors["border"], 
+            corner_radius=12
+        )
+        app.log_frame.pack(fill="x", padx=14, pady=8)
+
+        ctk.CTkLabel(
+            app.log_frame, 
+            text="Activity Logs:", 
+            font=ctk.CTkFont(size=12, weight="bold"),
+            text_color=colors["text_accent"]
+        ).pack(anchor="w", padx=16, pady=(10, 4))
+
+        app.log_textbox = ctk.CTkTextbox(
+            app.log_frame, 
+            height=90, 
+            font=ctk.CTkFont(family="Consolas", size=11),
+            fg_color=colors["bg_input"],
+            border_width=1,
+            border_color=colors["border"],
+            text_color=colors["text_primary"],
+            corner_radius=8
+        )
+        app.log_textbox.pack(fill="x", padx=16, pady=(0, 12))
+
+    # =========================================================================
+    # CARD 6: BOTTOM OUTPUT SHORTCUT BUTTONS
+    # =========================================================================
+    if not hasattr(app, 'bottom_frame') or not app.bottom_frame:
+        app.bottom_frame = ctk.CTkFrame(parent_container, fg_color="transparent")
+        app.bottom_frame.pack(fill="x", padx=14, pady=(6, 16))
+
+        app.open_folder_btn = ctk.CTkButton(
+            app.bottom_frame, 
+            text="📁 Open Dated Folder", 
+            command=app._open_output_folder, 
+            state="disabled",
+            width=170,
+            height=36,
+            font=ctk.CTkFont(size=12, weight="bold"),
+            fg_color=colors["primary"],
+            hover_color=colors["primary_hover"],
+            text_color="#FFFFFF",
+            text_color_disabled=("#9CA3AF", "#6B7280")
+        )
+        app.open_folder_btn.pack(side="left", padx=(0, 8))
+
+        app.open_excel_btn = ctk.CTkButton(
+            app.bottom_frame, 
+            text="📊 Open Excel Report", 
+            command=app._open_excel_file, 
+            state="disabled",
+            width=170,
+            height=36,
+            font=ctk.CTkFont(size=12, weight="bold"),
+            fg_color=colors["bg_card"],
+            hover_color=colors["bg_card_hover"],
+            border_width=1,
+            border_color=colors["border"],
+            text_color=colors["text_primary"],
+            text_color_disabled=("#9CA3AF", "#6B7280")
+        )
+        app.open_excel_btn.pack(side="left", padx=(0, 8))
+
+        app.open_cost_btn = ctk.CTkButton(
+            app.bottom_frame, 
+            text="📄 Open Cost Report", 
+            command=app._open_cost_file, 
+            state="disabled",
+            width=170,
+            height=36,
+            font=ctk.CTkFont(size=12, weight="bold"),
+            fg_color=colors["bg_card"],
+            hover_color=colors["bg_card_hover"],
+            border_width=1,
+            border_color=colors["border"],
+            text_color=colors["text_primary"],
+            text_color_disabled=("#9CA3AF", "#6B7280")
+        )
+        app.open_cost_btn.pack(side="left")
